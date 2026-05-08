@@ -1,0 +1,1959 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fordelingsliste</title>
+<style>
+:root{
+  --bg:#f7f6f2;--surface:#fff;--border:#e0ddd6;--border-s:#c8c4bb;
+  --text:#1a1916;--muted:#6b6860;--accent:#1a3a5c;--accent-l:#e8f0f8;
+  --amber:#7a4f00;--amber-bg:#fef8e8;--amber-b:#e8d090;
+  --green:#2d5a1b;--green-bg:#edf5e8;
+  --red:#7a1a1a;--red-bg:#fdf0f0;
+  --intern:#f0ede8;--intern-t:#8a8580;
+  --coop:#fdf3ee;--rema:#edf5f0;--dag:#eef3fa;
+  --mono:'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Georgia,serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+.app{max-width:1280px;margin:0 auto;padding:22px 18px}
+
+/* Top nav */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid var(--border-s);padding-bottom:13px;flex-wrap:wrap;gap:10px}
+.topbar h1{font-size:18px;font-weight:normal;color:var(--accent);letter-spacing:.02em}
+.tab-btns{display:flex;gap:0}
+.tab-btn{font-family:sans-serif;font-size:12px;padding:5px 14px;border:1px solid var(--border-s);background:var(--surface);color:var(--muted);cursor:pointer}
+.tab-btn:first-child{border-radius:4px 0 0 4px}
+.tab-btn:last-child{border-radius:0 4px 4px 0}
+.tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* Tabs */
+.tab{display:none}.tab.active{display:block}
+
+/* Chips */
+.sec-lbl{font-size:10px;font-family:sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:sans-serif;font-size:12px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:3px 10px;cursor:pointer;display:flex;align-items:center;gap:5px;color:var(--accent)}
+.chip:hover{border-color:var(--accent);background:var(--accent-l)}
+.chip-x{background:none;border:none;color:#bbb;cursor:pointer;font-size:13px;line-height:1;padding:0}
+.chip-x:hover{color:var(--red)}
+.chips-empty{font-family:sans-serif;font-size:12px;color:var(--muted);font-style:italic}
+
+/* 2-col grid */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:680px){.two-col{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px}
+.panel-t{font-size:10px;font-family:sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.fr{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.fr label{font-size:12px;font-family:sans-serif;color:var(--muted);min-width:128px}
+.fr input,.fr select{flex:1;border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:13px;font-family:sans-serif;background:var(--surface);color:var(--text)}
+.fr input:focus,.fr select:focus{outline:none;border-color:var(--accent)}
+.cap-row{font-family:sans-serif;font-size:13px;margin-bottom:3px}
+.cap-track{height:5px;background:var(--border);border-radius:3px;margin:3px 0 8px;overflow:hidden}
+.cap-fill{height:100%;background:var(--green);border-radius:3px;transition:width .3s,background .3s}
+.cap-fill.warn{background:#c87020}.cap-fill.over{background:var(--red)}
+.note{font-family:sans-serif;font-size:11px;color:var(--muted);margin-top:5px}
+.bdg{font-family:sans-serif;font-size:10px;padding:1px 6px;border-radius:3px;font-weight:bold}
+.b-coop{background:#fde0d0;color:#8a3010}.b-rema{background:#d8eed8;color:#2a5a20}.b-dag{background:#d8e8f8;color:#1a3a70}
+
+/* Table */
+.vt-wrap{overflow-x:auto;margin-bottom:5px}
+.vt{width:100%;border-collapse:collapse;font-family:sans-serif;font-size:11.5px}
+.vt th{background:var(--accent);color:#fff;font-weight:normal;padding:5px 4px;text-align:left;font-size:10px;white-space:nowrap}
+.vt th.i{background:#4a4a44}
+.vt td{padding:2px 3px;border-bottom:1px solid var(--border);vertical-align:middle}
+.vt tr:hover td{background:#fafaf8}
+.vt tr.coop td{background:var(--coop)}.vt tr.rema td{background:var(--rema)}.vt tr.dag td{background:var(--dag)}
+.vt tr.coop:hover td,.vt tr.rema:hover td,.vt tr.dag:hover td{filter:brightness(.97)}
+.vt td.i{background:var(--intern)!important;color:var(--intern-t)}
+.vt input[type=text],.vt input[type=number],.vt select{width:100%;border:none;background:transparent;font-size:11.5px;font-family:sans-serif;color:inherit;padding:2px}
+.vt input:focus,.vt select:focus{outline:1px solid var(--accent);border-radius:2px}
+.vt td.n input{text-align:right}
+.del{background:none;border:none;color:#ccc;cursor:pointer;font-size:13px;padding:0 2px;line-height:1}
+.del:hover{color:var(--red)}
+
+/* AI suggest button */
+.ai-btn{font-family:sans-serif;font-size:10px;background:#eef3fa;border:1px solid #b0c8e8;border-radius:3px;color:#1a3a5c;cursor:pointer;padding:1px 5px;white-space:nowrap;margin-left:2px}
+.ai-btn:hover{background:#d0e4f8}
+.ai-hint{font-family:sans-serif;font-size:10px;color:var(--green);padding:1px 3px;white-space:nowrap}
+
+/* PDF cells */
+.pdf-cell{display:flex;flex-direction:column;gap:2px;min-width:110px}
+.pdf-row{display:flex;align-items:center;gap:3px}
+.pdf-lbl{font-size:10px;color:var(--muted);font-family:sans-serif;white-space:nowrap;min-width:28px}
+.pdf-name{font-size:10px;color:var(--accent);font-family:sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px;cursor:pointer;text-decoration:underline}
+.pdf-name:hover{color:#0f2840}
+.pdf-upload{font-size:10px;color:var(--muted);font-family:sans-serif;cursor:pointer;text-decoration:underline}
+.pdf-upload:hover{color:var(--accent)}
+.pdf-clear{background:none;border:none;color:#bbb;cursor:pointer;font-size:11px;line-height:1;padding:0 1px}
+.pdf-clear:hover{color:var(--red)}
+
+.add-btn{font-family:sans-serif;font-size:12px;color:var(--accent);background:var(--accent-l);border:1px dashed #90b0d0;border-radius:4px;padding:5px 13px;cursor:pointer;margin-top:5px}
+.add-btn:hover{background:#d8eaf8}
+
+/* Actions */
+.actions{display:flex;gap:8px;margin:12px 0 16px;flex-wrap:wrap;align-items:center}
+.btn-p{font-family:sans-serif;font-size:13px;font-weight:bold;background:var(--accent);color:#fff;border:none;border-radius:5px;padding:8px 18px;cursor:pointer}
+.btn-p:hover{background:#0f2840}
+.btn-s{font-family:sans-serif;font-size:12px;background:var(--green-bg);border:1px solid #b0d0a0;border-radius:5px;padding:7px 14px;cursor:pointer;color:var(--green)}
+.btn-s:hover{background:#d8ecd0}
+.btn-c{font-family:sans-serif;font-size:12px;background:none;border:1px solid var(--border-s);border-radius:5px;padding:7px 13px;cursor:pointer;color:var(--muted)}
+.btn-c:hover{border-color:var(--red);color:var(--red)}
+
+/* Output */
+.out-wrap{background:var(--surface);border:1px solid var(--border);border-radius:6px}
+.out-hdr{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap}
+.out-hdr-l{font-family:sans-serif;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.out-hdr-r{display:flex;gap:6px;flex-wrap:wrap}
+.cbtn{font-family:sans-serif;font-size:12px;background:var(--green-bg);border:1px solid #b0d0a0;border-radius:4px;padding:4px 10px;cursor:pointer;color:var(--green)}
+.cbtn:hover{background:#d8ecd0}
+.cbtn.amber{background:var(--amber-bg);border-color:var(--amber-b);color:var(--amber)}
+.cbtn.amber:hover{background:#faecc8}
+.emne-bar{background:var(--amber-bg);border-bottom:1px solid var(--amber-b);padding:6px 12px;font-family:sans-serif;font-size:12px;color:var(--amber)}
+textarea.out{font-family:var(--mono);font-size:12px;line-height:1.75;padding:13px 12px;white-space:pre;min-height:90px;color:var(--text);outline:none;width:100%;border:none;background:transparent;resize:vertical;overflow-x:auto}
+
+/* Rapport */
+.rapport-wrap{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.rapport-hdr{background:var(--accent);color:#fff;padding:10px 14px;font-family:sans-serif;font-size:12px;display:flex;justify-content:space-between;align-items:center}
+.rpt-table{width:100%;border-collapse:collapse;font-family:sans-serif;font-size:12px}
+.rpt-table th{background:#f0ede8;color:var(--muted);font-weight:normal;padding:6px 10px;text-align:left;font-size:11px;border-bottom:1px solid var(--border)}
+.rpt-table td{padding:6px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+.rpt-table tr:hover td{background:#fafaf8}
+.rpt-table tr.rpt-coop td{background:var(--coop)}
+.rpt-empty{font-family:sans-serif;font-size:13px;color:var(--muted);padding:24px;text-align:center;font-style:italic}
+.rpt-open-btn{font-family:sans-serif;font-size:11px;color:var(--accent);background:var(--accent-l);border:1px solid #b0c8e0;border-radius:3px;padding:2px 7px;cursor:pointer}
+.rpt-open-btn:hover{background:#d8eaf8}
+.rpt-del-btn{font-family:sans-serif;font-size:11px;color:var(--red);background:var(--red-bg);border:1px solid #e0b0b0;border-radius:3px;padding:2px 7px;cursor:pointer}
+.rpt-del-btn:hover{background:#fad8d8}
+.rpt-stats{display:flex;gap:18px;padding:12px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.stat-box{font-family:sans-serif;font-size:12px}
+.stat-box strong{font-size:18px;display:block;color:var(--accent)}
+
+
+
+/* Fragtpristabeller */
+.pt-wrap{background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:18px;overflow:hidden}
+.pt-hdr{background:var(--accent);color:#fff;padding:9px 14px;font-family:sans-serif;font-size:12px;display:flex;justify-content:space-between;align-items:center}
+.pt-table{width:100%;border-collapse:collapse;font-family:sans-serif;font-size:12px}
+.pt-table th{background:#f0ede8;color:var(--muted);font-weight:normal;padding:6px 10px;text-align:left;font-size:11px;border-bottom:1px solid var(--border)}
+.pt-table th:not(:first-child){text-align:right}
+.pt-table td{padding:4px 10px;border-bottom:1px solid var(--border)}
+.pt-table tr:hover td{background:#fafaf8}
+.pt-table td:first-child{color:var(--text)}
+.pt-table td:not(:first-child){text-align:right}
+.pt-table td input{width:80px;border:none;background:transparent;font-size:12px;font-family:sans-serif;text-align:right;color:var(--text);padding:1px 2px}
+.pt-table td input:focus{outline:1px solid var(--accent);border-radius:2px;background:#fff}
+.pt-tillæg{padding:10px 14px;font-family:sans-serif;font-size:12px;color:var(--muted);border-top:1px solid var(--border)}
+/* Auto-suggest overlay */
+.suggest-box{position:absolute;background:#fff;border:1px solid var(--accent);border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:50;font-family:sans-serif;font-size:12px;min-width:180px;max-width:300px}
+.suggest-item{padding:5px 10px;cursor:pointer;display:flex;flex-direction:column}
+.suggest-item:hover,.suggest-item.active{background:var(--accent-l)}
+.suggest-item .si-main{font-weight:bold;color:var(--text)}
+.suggest-item .si-sub{font-size:10px;color:var(--muted);margin-top:1px}
+.suggest-hint{position:absolute;pointer-events:none;color:#aaa;font-family:sans-serif;font-size:12px}
+
+
+/* Indkøbsordre import modal */
+.po-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;display:none;align-items:center;justify-content:center}
+.po-overlay.on{display:flex}
+.po-modal{background:var(--surface);border-radius:8px;padding:22px 24px;width:min(680px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.18)}
+.po-modal h3{font-size:15px;color:var(--accent);margin-bottom:4px;font-weight:normal}
+.po-modal p{font-family:sans-serif;font-size:12px;color:var(--muted);margin-bottom:12px}
+.po-drop{border:2px dashed var(--border-s);border-radius:6px;padding:32px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:12px}
+.po-drop.drag{border-color:var(--accent);background:var(--accent-l)}
+.po-drop.has-file{border-color:var(--green);background:var(--green-bg)}
+.po-drop-icon{font-size:28px;margin-bottom:8px}
+.po-drop-txt{font-family:sans-serif;font-size:13px;color:var(--muted)}
+.po-drop-name{font-family:sans-serif;font-size:12px;color:var(--green);font-weight:bold;margin-top:4px}
+.po-status{font-family:sans-serif;font-size:12px;padding:8px 10px;border-radius:4px;margin:8px 0;display:none}
+.po-status.loading{background:var(--accent-l);color:var(--accent)}
+.po-status.ok{background:var(--green-bg);color:var(--green)}
+.po-status.err{background:var(--red-bg);color:var(--red)}
+.po-preview{margin-top:12px;display:none}
+.po-preview-title{font-family:sans-serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.po-row{font-family:sans-serif;font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:4px;margin-bottom:4px;display:grid;grid-template-columns:auto 1fr auto auto auto;gap:8px;align-items:center}
+.po-row .pr-kas{background:var(--accent-l);color:var(--accent);padding:1px 7px;border-radius:3px;font-size:11px;white-space:nowrap;font-weight:bold}
+.po-row .pr-vare{font-weight:bold}
+.po-row .pr-pak{color:var(--muted);font-size:11px}
+.po-row .pr-pris{color:var(--green);font-size:11px;white-space:nowrap}
+.po-row .pr-po{color:var(--muted);font-size:10px;white-space:nowrap}
+.po-bil-info{background:#f7f6f2;border:1px solid var(--border);border-radius:5px;padding:10px 12px;margin-bottom:10px;font-family:sans-serif;font-size:12px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.po-bil-info strong{color:var(--accent)}
+.po-modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.po-btn-ok{font-family:sans-serif;font-size:12px;background:var(--accent);color:#fff;border:none;border-radius:4px;padding:7px 16px;cursor:pointer}
+.po-btn-ok:hover{background:#0f2840}
+.po-btn-green{font-family:sans-serif;font-size:12px;background:var(--green);color:#fff;border:none;border-radius:4px;padding:7px 16px;cursor:pointer}
+.po-btn-close{font-family:sans-serif;font-size:12px;background:none;border:1px solid var(--border-s);border-radius:4px;padding:7px 14px;cursor:pointer;color:var(--muted)}
+
+
+/* Formatted output */
+#out b { font-weight:bold; }
+#out mark { background:#FFE500; padding:0 2px; font-weight:bold; }
+#out span { display:block; }
+
+#out { outline:none; }
+#out .ol-hdr { font-weight:bold; }
+#out .ol-nb-yellow { background:#FFE500; font-weight:bold; }
+#out .ol-nb-coop { background:#FFE500; font-weight:bold; display:block; margin:2px 0; }
+#out .ol-plain { }
+#out .ol-spacer { display:block; height:4px; }
+
+/* Import lasteliste modal */
+.imp-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:center;justify-content:center}
+.imp-overlay.on{display:flex}
+.imp-modal{background:var(--surface);border-radius:8px;padding:22px 24px;width:min(700px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.18)}
+.imp-modal h3{font-size:15px;color:var(--accent);margin-bottom:4px;font-weight:normal}
+.imp-modal p{font-family:sans-serif;font-size:12px;color:var(--muted);margin-bottom:12px}
+.imp-textarea{width:100%;height:180px;font-family:var(--mono);font-size:11.5px;border:1px solid var(--border);border-radius:4px;padding:10px;resize:vertical;color:var(--text)}
+.imp-textarea:focus{outline:none;border-color:var(--accent)}
+.imp-status{font-family:sans-serif;font-size:12px;padding:8px 10px;border-radius:4px;margin:10px 0;display:none}
+.imp-status.loading{background:var(--accent-l);color:var(--accent)}
+.imp-status.ok{background:var(--green-bg);color:var(--green)}
+.imp-status.err{background:var(--red-bg);color:var(--red)}
+.imp-preview{margin-top:12px;display:none}
+.imp-preview-title{font-family:sans-serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.imp-row{font-family:sans-serif;font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:4px;margin-bottom:4px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.imp-row .ir-pal{background:#e8f0f8;color:var(--accent);padding:1px 6px;border-radius:3px;font-size:11px;white-space:nowrap}
+.imp-row .ir-vare{font-weight:bold}
+.imp-row .ir-kunde{background:#e8f5e0;color:var(--green);padding:1px 6px;border-radius:3px;font-size:11px}
+.imp-row .ir-warn{background:#fff3cd;color:#856404;padding:1px 6px;border-radius:3px;font-size:11px}
+.imp-modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.imp-btn-ok{font-family:sans-serif;font-size:12px;background:var(--accent);color:#fff;border:none;border-radius:4px;padding:7px 16px;cursor:pointer}
+.imp-btn-ok:hover{background:#0f2840}
+.imp-btn-close{font-family:sans-serif;font-size:12px;background:none;border:1px solid var(--border-s);border-radius:4px;padding:7px 14px;cursor:pointer;color:var(--muted)}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a3a5c;color:#fff;font-family:sans-serif;font-size:13px;padding:8px 16px;border-radius:16px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+.toast.on{opacity:1}
+
+/* AI modal */
+.ai-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;display:none;align-items:center;justify-content:center}
+.ai-overlay.on{display:flex}
+.ai-modal{background:var(--surface);border-radius:8px;padding:22px 24px;max-width:420px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.15)}
+.ai-modal h3{font-size:15px;color:var(--accent);margin-bottom:4px;font-weight:normal}
+.ai-modal p{font-family:sans-serif;font-size:12px;color:var(--muted);margin-bottom:14px}
+.ai-result{font-family:sans-serif;font-size:13px;background:var(--green-bg);border:1px solid #b0d0a0;border-radius:5px;padding:10px 12px;margin-bottom:14px;color:var(--green)}
+.ai-result strong{font-size:16px;display:block;margin-bottom:3px;color:var(--green)}
+.ai-modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.ai-apply{font-family:sans-serif;font-size:12px;background:var(--accent);color:#fff;border:none;border-radius:4px;padding:6px 14px;cursor:pointer}
+.ai-close{font-family:sans-serif;font-size:12px;background:none;border:1px solid var(--border-s);border-radius:4px;padding:6px 12px;cursor:pointer;color:var(--muted)}
+</style>
+</head>
+<body>
+<datalist id="dl-vare"></datalist>
+<datalist id="dl-pak"></datalist>
+<datalist id="dl-mn"></datalist>
+<div class="app">
+
+<div class="topbar">
+  <h1>Fordelingsliste</h1>
+  <div class="tab-btns">
+    <button class="tab-btn active" onclick="showTab('main',this)">Fordeling</button>
+    <button class="tab-btn" onclick="showTab('rapport',this)">Rapport</button>
+    <button class="tab-btn" onclick="showTab('priser',this)">Fragtpriser</button>
+  </div>
+</div>
+
+<!-- ══════════ TAB: FORDELING ══════════ -->
+<div class="tab active" id="tab-main">
+
+  <div style="margin-bottom:14px">
+    <div class="sec-lbl">Gemte fordelinger</div>
+    <div class="chips" id="chips"><span class="chips-empty">Ingen gemte fordelinger endnu</span></div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-t">Bil-information</div>
+      <div class="fr"><label>Ref (bil-nr.)</label><input id="b-ref" placeholder="fx 30432"></div>
+      <div class="fr"><label>Nummerplade</label><input id="b-np" placeholder="fx FW6864"></div>
+      <div class="fr"><label>Vognmand</label><select id="b-vognmand" onchange="autoCalcFragt()" style="flex:1;border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-size:13px;font-family:sans-serif"><option value="">– vælg –</option><option>Kaj Madsen</option><option>DFDS</option><option>Frank Sørensen</option></select></div>
+      <div class="fr"><label>Grader (transport)</label><input id="b-grader" placeholder="fx +4" oninput="this.style.background='';this.dataset.autosuggested='';this.title=''"></div>
+      <div class="fr"><label>Leveringsdato</label><input id="b-dato" placeholder="fx 29/04/2026" oninput="autoFillDato()"></div>
+      <div class="fr"><label>Fra / Til</label><input id="b-fra-til" placeholder="fx Bari --> Jylland" oninput="autoCalcFragt()"></div>
+      <div class="fr"><label>Samlet fragt DKK</label><input id="b-fragt" placeholder="fx 4200" oninput="this.dataset.auto='';this.style.background='';this.title=''"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-t">Kapacitet &amp; totaler</div>
+      <div class="cap-row">Paller: <strong id="c-pal">0</strong> / 33</div>
+      <div class="cap-track"><div class="cap-fill" id="c-bar" style="width:0%"></div></div>
+      <div class="cap-row">Kasser total: <strong id="c-kas">0</strong></div>
+      <div class="cap-row" style="margin-top:3px">Intern pris total: <strong id="c-pris">–</strong></div>
+      <div class="note" style="margin-top:9px">
+        <span class="bdg b-coop">Coop</span>
+        <span class="bdg b-rema">Rema</span>
+        <span class="bdg b-dag">Dagrofa</span>
+        &nbsp;— materialenr. vises i output
+      </div>
+      <div class="note" style="margin-top:4px">AI-knap: foreslår kasser ud fra paller <em>eller</em> omvendt</div>
+    </div>
+  </div>
+
+  <div class="sec-lbl" style="margin-bottom:5px">Varelinjer — lasteliste-rækkefølge (sidst lastet øverst) · <span style="font-weight:normal;text-transform:none;letter-spacing:0;font-size:11px">Grå = intern · PDF = vedhæft indkøbsordre + DDT</span></div>
+  <div class="vt-wrap">
+  <table class="vt">
+  <thead><tr>
+    <th style="width:18px"></th>
+    <th style="min-width:140px">Kunde</th>
+    <th style="min-width:142px">Vare (dansk)</th>
+    <th style="width:72px">Paller <button class="ai-btn" style="margin-left:2px" onclick="openAI('pal')" title="AI-forslag">AI ↕</button></th>
+    <th style="width:72px">Kasser <button class="ai-btn" onclick="openAI('kas')" title="AI-forslag">AI ↕</button></th>
+    <th style="min-width:88px">Pakning</th>
+    <th style="width:58px">Kassetype</th>
+    <th style="width:45px">PL?</th>
+    <th style="min-width:108px">Materialenr.
+(Coop/Dag/Rema)</th>
+    <th style="min-width:108px">PO-nummer
+(alle)</th>
+    <th style="width:70px">Delordre?</th>
+    <th class="i" style="min-width:90px">Leverandør</th>
+    <th class="i" style="width:58px">Stk/ks</th>
+    <th class="i" style="width:62px">Stk-pris</th>
+    <th class="i" style="width:68px">Kassepris</th>
+    <th class="i" style="width:62px">Total DKK</th>
+    <th style="min-width:130px">Indkøbsordre + DDT</th>
+  </tr></thead>
+  <tbody id="vbody"></tbody>
+  </table>
+  </div>
+  <button class="add-btn" onclick="addRow()">+ Tilføj linje</button>
+
+  <div class="actions">
+    <button class="btn-p" onclick="generer()">Generer fordelingsliste</button>
+    <button class="btn-s" style="background:var(--accent-l);border-color:#90b0d0;color:var(--accent)" onclick="openImport()">⬆ Importer lasteliste</button>
+    <button class="btn-s" style="background:#fef8e8;border-color:#e8d090;color:#7a4f00" onclick="openPOImport()">📄 Importer indkøbsordre</button>
+    <button class="btn-s" onclick="gem()">Gem fordeling</button>
+    <button class="btn-c" onclick="clearAll()">Ryd alt</button>
+  </div>
+
+  <div class="out-wrap">
+    <div class="out-hdr">
+      <span class="out-hdr-l">Fordelingsliste — klar til mail</span>
+      <div class="out-hdr-r">
+        <button class="cbtn" onclick="kopier(false)">📋 Kopier til mail</button>
+        <button class="cbtn amber" onclick="kopier(true)">📋 Kopier med priser</button>
+      </div>
+    </div>
+    <div id="emne" style="display:none" class="emne-bar"></div>
+    <div id="out"
+         style="font-family:'Courier New',monospace;font-size:12px;line-height:1.75;
+                padding:16px 14px;min-height:120px;color:var(--text);
+                background:var(--surface);white-space:pre;overflow-x:auto;
+                border-top:1px solid var(--border)">
+      <span style="color:var(--muted);font-style:italic;font-family:sans-serif">Tryk 'Generer fordelingsliste'...</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: RAPPORT ══════════ -->
+<div class="tab" id="tab-rapport">
+  <div class="rapport-wrap">
+    <div class="rapport-hdr">
+      <span>Oversigt over alle gemte fordelinger</span>
+      <button class="cbtn" style="background:#fff3;border-color:#fff5;color:#fff" onclick="exportCSV()">Eksporter CSV</button>
+    </div>
+    <div class="rpt-stats" id="rpt-stats"></div>
+    <div id="rpt-body"></div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<!-- ══════════ TAB: FRAGTPRISER ══════════ -->
+<div class="tab" id="tab-priser">
+  <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+    <div class="sec-lbl">Fragtpristabeller — redigér direkte · bruges til automatisk fragtberegning</div>
+    <div style="font-family:sans-serif;font-size:11px;color:var(--muted)">Priser i DKK · ændringer gemmes automatisk</div>
+  </div>
+  <div id="priser-wrap"></div>
+</div>
+
+<!-- Indkøbsordre import modal -->
+<div class="po-overlay" id="po-overlay">
+  <div class="po-modal">
+    <h3>Importer indkøbsordre (PDF)</h3>
+    <p>Understøtter: <strong>Netto, Salling</strong> — samme format. Træk PDF hertil eller klik for at vælge.</p>
+
+    <div class="po-drop" id="po-drop" onclick="document.getElementById('po-file-inp').click()">
+      <div class="po-drop-icon">📄</div>
+      <div class="po-drop-txt">Træk indkøbsordre hertil<br><span style="font-size:11px">eller klik for at vælge PDF</span></div>
+      <div class="po-drop-name" id="po-file-name" style="display:none"></div>
+      <input type="file" id="po-file-inp" accept=".pdf" style="display:none" onchange="onPOFileSelect(this)">
+    </div>
+
+    <div class="po-status" id="po-status"></div>
+
+    <div class="po-bil-info" id="po-bil-info" style="display:none">
+      <div>Kunde: <strong id="po-kunde">–</strong></div>
+      <div>Ordrenr. (PO): <strong id="po-ordrenr">–</strong></div>
+      <div>Leveringsdato: <strong id="po-levdato">–</strong></div>
+      <div>Valuta: <strong id="po-valuta">–</strong></div>
+    </div>
+
+    <div class="po-preview" id="po-preview">
+      <div class="po-preview-title">
+        <span>Varelinjer fundet</span>
+        <span id="po-line-count" style="color:var(--green)"></span>
+      </div>
+      <div id="po-rows"></div>
+    </div>
+
+    <div class="po-modal-btns">
+      <button class="po-btn-close" onclick="closePOImport()">Annuller</button>
+      <button class="po-btn-ok" id="po-parse-btn" onclick="runPOImport()">Læs PDF med AI</button>
+      <button class="po-btn-green" id="po-apply-btn" style="display:none" onclick="applyPOImport()">Tilføj til fordeling</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI modal -->
+<div class="ai-overlay" id="ai-overlay">
+  <div class="ai-modal">
+    <h3>AI-forslag: kasser ↔ paller</h3>
+    <p id="ai-desc">Vælg en udfyldt varelinje, så beregner AI et forslag baseret på historiske mønstre.</p>
+    <div class="ai-result" id="ai-result" style="display:none"></div>
+    <div style="margin-bottom:14px" id="ai-select-wrap">
+      <select id="ai-row-sel" style="width:100%;font-family:sans-serif;font-size:12px;border:1px solid var(--border);border-radius:4px;padding:5px 8px">
+        <option value="">– vælg varelinje –</option>
+      </select>
+    </div>
+    <div class="ai-modal-btns">
+      <button class="ai-close" onclick="closeAI()">Luk</button>
+      <button class="ai-apply" id="ai-apply-btn" style="display:none" onclick="applyAI()">Anvend forslag</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Kundedata ──────────────────────────────────────────────────────────────
+const KD=[
+  {n:"Dagrofa Vejle",      by:"Vejle",      s:23.00,t:"23:00",coop:false,mat:true, offset:-1},
+  {n:"Netto Aarslev",      by:"Aarslev",    s:3.00, t:"03:00",coop:false,mat:false,offset:0},
+  {n:"Salling Højbjerg",   by:"Højbjerg",   s:6.00, t:"06:00",coop:false,mat:false,offset:0},
+  {n:"Coop Hasselager",    by:"Hasselager", s:6.00, t:"06:00",coop:true, mat:true, offset:0},
+  {n:"CE Larsen Aarhus",   by:"Aarhus",     s:6.00, t:"06:00",coop:false,mat:false,offset:0},
+  {n:"Eurofrugt Hinnerup", by:"Hinnerup",   s:7.00, t:"07:00",coop:false,mat:false,offset:0},
+  {n:"Rema 1000",          by:"",           s:6.00, t:"06:00",coop:false,mat:true, offset:0},
+  {n:"Netto Køge",         by:"Køge",       s:2.00, t:"02:00",coop:false,mat:false,offset:0},
+  {n:"Nemlig Brøndby",     by:"Brøndby",    s:4.00, t:"04:00",coop:false,mat:false,offset:0},
+  {n:"Salling Ishøj",      by:"Ishøj",      s:6.00, t:"06:00",coop:false,mat:false,offset:0},
+  {n:"Coop Brøndby",       by:"Brøndby",    s:6.00, t:"06:00",coop:true, mat:true, offset:0},
+  {n:"AxFood (Dagab)",    by:"Landskrona", s:6.00, t:"06:00",coop:false,mat:true, offset:0},
+  {n:"Brdr. Kjær",         by:"",           s:23.50,t:"23:30",coop:false,mat:false,offset:0},
+  {n:"Prima Frugt (Ishøj)",by:"Ishøj",      s:5.00, t:"05:00",coop:false,mat:false,offset:0},
+  {n:"Dagrofa",            by:"",           s:23.00,t:"23:00",coop:false,mat:true, offset:-1},
+  {n:"Grøn Balance",       by:"",           s:7.30, t:"07:30",coop:false,mat:false,offset:0},
+  {n:"Prima Frugt",        by:"",           s:5.00, t:"05:00",coop:false,mat:false,offset:0},
+];
+const DAGE=["Søndag","Mandag","Tirsdag","Onsdag","Torsdag","Fredag","Lørdag"];
+
+function ki(n){return KD.find(k=>k.n===n)||{by:"",s:99,t:"",coop:false,mat:false};}
+function rcls(n){
+  if(n.startsWith("Coop"))    return"coop";
+  if(n.startsWith("Rema"))    return"rema";
+  if(n.startsWith("Dagrofa")) return"dag";
+  return"";
+}
+
+// PDF storage per row (rowId → {ordre:{name,url}, ddt:{name,url}})
+const pdfStore={};
+
+// ── Rows ───────────────────────────────────────────────────────────────────
+let rowCounter=0;
+function addRow(d){
+  d=d||{};
+  const tb=document.getElementById("vbody");
+  const tr=document.createElement("tr");
+  const rid="r"+(++rowCounter);
+  tr.dataset.rid=rid;
+  pdfStore[rid]={ordre:d.ordre||null,ddt:d.ddt||null};
+  const opts=KD.map(k=>`<option value="${k.n}"${d.kunde===k.n?" selected":""}>${k.n}</option>`).join("");
+  tr.innerHTML=`
+    <td><button class="del" onclick="delRow(this)">×</button></td>
+    <td><select class="ks" onchange="onKC(this)"><option value="">– vælg –</option>${opts}</select></td>
+    <td style="display:none"><input type="text" value="${esc(d.dato||document.getElementById('b-dato').value.trim())}" placeholder=""></td>
+    <td><input type="text" value="${esc(d.vare||'')}" placeholder="fx Ærter" list="dl-vare" oninput="autoSuggestGrader()"></td>
+    <td class="n"><input type="number" min="0" value="${d.pal||''}" oninput="updateCap()"></td>
+    <td class="n"><input type="number" min="0" value="${d.kas||''}" oninput="recalc(this)"></td>
+    <td><input type="text" value="${esc(d.pak||'')}" placeholder="fx 12x450g" list="dl-pak"></td>
+    <td><select><option value="EPS"${(d.kt||'EPS')==='EPS'?" selected":""}>EPS</option><option value="PAP"${d.kt==='PAP'?" selected":""}>PAP</option></select></td>
+    <td><select><option value="Nej"${(d.pl||'Nej')==='Nej'?" selected":""}>Nej</option><option value="Ja"${d.pl==='Ja'?" selected":""}>Ja</option></select></td>
+    <td><input type="text" value="${esc(d.mn||'')}" placeholder="–" list="dl-mn"></td>
+    <td><input type="text" value="${esc(d.po||'')}" placeholder="fx 4046751245"></td>
+    <td><select><option value="Nej"${(d.del||'Nej')==='Nej'?" selected":""}>Nej</option><option value="Ja"${d.del==='Ja'?" selected":""}>Ja</option></select></td>
+    <td class="i"><input type="text" value="${esc(d.lev||'')}" placeholder="–"></td>
+    <td class="i n"><input type="number" min="0" step="1"     value="${d.spk||''}" placeholder="stk/ks"    oninput="recalc(this)"></td>
+    <td class="i n"><input type="number" min="0" step="0.001" value="${d.sp||''}"  placeholder="stk-pris"  oninput="recalc(this)"></td>
+    <td class="i n"><input type="number" min="0" step="0.01"  value="${d.kp||''}"  placeholder="kassepris" oninput="recalc(this)"></td>
+    <td class="i n" style="min-width:62px;font-size:11px">–</td>
+    <td><div class="pdf-cell" id="pdf-${rid}"></div></td>`;
+  tb.appendChild(tr);
+  if(d.kunde){const s=tr.querySelector(".ks");s.value=d.kunde;updRS(s);}
+  renderPdfCell(rid);
+  // Attach autocomplete to text inputs
+  const tinputs=tr.querySelectorAll("input[type=text]");
+  // vare=index 2 among all inputs, pak=index 5
+  const allInps=[...tr.querySelectorAll("input,select")];
+  const vareInp=allInps[2]; const pakInp=allInps[5];
+  if(vareInp) attachAutocomplete(vareInp,"vare");
+  if(pakInp)  attachAutocomplete(pakInp,"pak");
+  updateCap();
+  return tr;
+}
+
+function delRow(btn){
+  const tr=btn.closest("tr");
+  const rid=tr.dataset.rid;
+  delete pdfStore[rid];
+  tr.remove();
+  updateCap();
+}
+
+function esc(s){return String(s).replace(/"/g,"&quot;").replace(/</g,"&lt;");}
+
+function onKC(sel){updRS(sel);updateCap();}
+function updRS(sel){
+  const tr=sel.closest("tr");
+  tr.className=rcls(sel.value);
+  const k=ki(sel.value);
+  const mn=tr.querySelectorAll("input")[7]; // index 7 = materialenr input (0-based among inputs)
+  if(mn) mn.placeholder=k.mat?"Påkrævet":"–";
+}
+
+function recalc(inp){
+  const tr=inp.closest("tr");
+  const ins=tr.querySelectorAll("input,select");
+  const kas=parseFloat(ins[4].value)||0;
+  const spk=parseFloat(ins[12].value)||0;
+  const sp =parseFloat(ins[13].value)||0;
+  let   kp =parseFloat(ins[14].value)||0;
+  if(spk>0&&sp>0){kp=Math.round(spk*sp*1000)/1000;ins[14].value=kp.toFixed(2);}
+  const tot=kas>0&&kp>0?Math.round(kas*kp*100)/100:0;
+  tr.querySelector("td:nth-last-child(2)").textContent=tot>0?tot.toFixed(2):"–";
+  updateCap();
+}
+
+function getRows(){
+  return Array.from(document.querySelectorAll("#vbody tr")).map(tr=>{
+    const ins=tr.querySelectorAll("input,select");
+    const rid=tr.dataset.rid;
+    const spk=parseFloat(ins[12].value)||0;
+    const sp =parseFloat(ins[13].value)||0;
+    let   kp =parseFloat(ins[14].value)||0;
+    if(spk>0&&sp>0) kp=Math.round(spk*sp*1000)/1000;
+    const kas=parseFloat(ins[4].value)||0;
+    const pdf=pdfStore[rid]||{};
+    return{
+      rid,
+      kunde:ins[0].value,dato:ins[1].value,vare:ins[2].value,
+      pal:parseFloat(ins[3].value)||0,kas,
+      pak:ins[5].value,kt:ins[6].value,pl:ins[7].value,
+      mn:ins[8].value,po:ins[9].value,del:ins[10].value,lev:ins[11].value,
+      spk,sp,kp,
+      tot:kas&&kp?Math.round(kas*kp*100)/100:0,
+      ordre:pdf.ordre||null,ddt:pdf.ddt||null
+    };
+  });
+}
+
+function updateCap(){
+  const rows=getRows();
+  const pal=rows.reduce((s,r)=>s+r.pal,0);
+  const kas=rows.reduce((s,r)=>s+r.kas,0);
+  const pris=rows.reduce((s,r)=>s+r.tot,0);
+  document.getElementById("c-pal").textContent=pal;
+  document.getElementById("c-kas").textContent=kas;
+  document.getElementById("c-pris").textContent=pris>0?pris.toFixed(2)+" DKK":"–";
+  const pct=Math.min(pal/33*100,100);
+  const bar=document.getElementById("c-bar");
+  bar.style.width=pct+"%";
+  bar.className="cap-fill"+(pal>33?" over":pal>28?" warn":"");
+}
+
+// ── PDF upload ─────────────────────────────────────────────────────────────
+function renderPdfCell(rid){
+  const el=document.getElementById("pdf-"+rid);
+  if(!el)return;
+  const pdf=pdfStore[rid]||{};
+  el.innerHTML=["ordre","ddt"].map(type=>{
+    const f=pdf[type];
+    const lbl=type==="ordre"?"Ordre:":"DDT:  ";
+    if(f){
+      return`<div class="pdf-row">
+        <span class="pdf-lbl">${lbl}</span>
+        <span class="pdf-name" onclick="openPdf('${rid}','${type}')" title="${esc(f.name)}">${esc(f.name.length>14?f.name.slice(0,12)+"…":f.name)}</span>
+        <button class="pdf-clear" onclick="clearPdf('${rid}','${type}')" title="Fjern">×</button>
+      </div>`;
+    }else{
+      return`<div class="pdf-row">
+        <span class="pdf-lbl">${lbl}</span>
+        <label class="pdf-upload">
+          Vælg PDF
+          <input type="file" accept=".pdf" style="display:none" onchange="uploadPdf(this,'${rid}','${type}')">
+        </label>
+      </div>`;
+    }
+  }).join("");
+}
+
+function uploadPdf(inp,rid,type){
+  const file=inp.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    if(!pdfStore[rid])pdfStore[rid]={};
+    pdfStore[rid][type]={name:file.name,data:e.target.result};
+    renderPdfCell(rid);
+    showToast("PDF gemt: "+file.name);
+  };
+  reader.readAsDataURL(file);
+}
+
+function openPdf(rid,type){
+  const f=pdfStore[rid]&&pdfStore[rid][type];
+  if(!f)return;
+  const w=window.open();
+  w.document.write(`<iframe src="${f.data}" style="width:100%;height:100vh;border:none"></iframe>`);
+}
+
+function clearPdf(rid,type){
+  if(pdfStore[rid])pdfStore[rid][type]=null;
+  renderPdfCell(rid);
+}
+
+// ── Gem / indlæs ───────────────────────────────────────────────────────────
+function autoFillDato(){
+  const d=document.getElementById("b-dato").value.trim();
+  // Fill hidden dato field in every row
+  document.querySelectorAll("#vbody tr").forEach(tr=>{
+    const ins=tr.querySelectorAll("input,select");
+    if(ins[1]) ins[1].value=d;
+  });
+  // Auto-suggest grader based on all current vare names
+  autoSuggestGrader();
+}
+
+function populateDataLists(){
+  const all=getSaved();
+  const varer=new Set(), pakninger=new Set(), matnr=new Set();
+  all.forEach(d=>{
+    (d.rows||[]).forEach(r=>{
+      if(r.vare) varer.add(r.vare);
+      if(r.pak)  pakninger.add(r.pak);
+      if(r.mn)   matnr.add(r.mn);
+    });
+  });
+  const fill=(id,set)=>{
+    const dl=document.getElementById(id);
+    if(!dl) return;
+    dl.innerHTML=[...set].sort().map(v=>`<option value="${v}">`).join('');
+  };
+  fill('dl-vare', varer);
+  fill('dl-pak',  pakninger);
+  fill('dl-mn',   matnr);
+}
+
+function autoSuggestGrader(){
+  const rows=getRows();
+  const varer=rows.map(r=>r.vare).filter(Boolean);
+  if(!varer.length) return;
+  // Historik fra gemte fordelinger
+  const all=getSaved();
+  const vGrader=[];
+  all.forEach(d=>{
+    if(d.bil&&d.bil.grader&&d.rows){
+      d.rows.forEach(r=>{
+        if(r.vare) vGrader.push({vare:r.vare.toLowerCase(),grader:d.bil.grader});
+      });
+    }
+  });
+  if(!vGrader.length) return;
+  // Find lowest grader seen for any of the current varer
+  let lowestGrader=null;
+  let lowestNum=999;
+  varer.forEach(v=>{
+    const vLow=v.toLowerCase();
+    vGrader.forEach(h=>{
+      if(h.vare.includes(vLow)||vLow.includes(h.vare.slice(0,5))){
+        const num=parseFloat(h.grader.replace('+',''));
+        if(!isNaN(num)&&num<lowestNum){lowestNum=num;lowestGrader=h.grader;}
+      }
+    });
+  });
+  const grEl=document.getElementById("b-grader");
+  if(lowestGrader&&!grEl.value){
+    grEl.value=lowestGrader;
+    grEl.style.background="#edf5e8";
+    grEl.title="Auto-forslag baseret på historik. Klik for at rette.";
+  }
+}
+
+function bilData(){return{
+  ref:document.getElementById("b-ref").value.trim(),
+  np:document.getElementById("b-np").value.trim(),
+  vognmand:document.getElementById("b-vognmand").value.trim(),
+  grader:document.getElementById("b-grader").value.trim(),
+  dato:document.getElementById("b-dato").value.trim(),
+  fraTil:document.getElementById("b-fra-til").value.trim(),
+  fragt:document.getElementById("b-fragt").value.trim()
+};}
+function setBil(b){
+  document.getElementById("b-ref").value    =b.ref||"";
+  document.getElementById("b-np").value     =b.np||"";
+  document.getElementById("b-grader").value =b.grader||"";
+  document.getElementById("b-dato").value   =b.dato||"";
+  document.getElementById("b-fra-til").value=b.fraTil||"";
+  document.getElementById("b-fragt").value  =b.fragt||"";
+}
+
+function getSaved(){
+  const res=[];
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k&&k.startsWith("fl_")){
+      try{const o=JSON.parse(localStorage.getItem(k));o._k=k;res.push(o);}catch(e){}
+    }
+  }
+  return res.sort((a,b)=>(b._k||"").localeCompare(a._k||""));
+}
+
+function gem(){
+  const b=bilData();
+  if(!b.ref){alert("Udfyld Ref før du gemmer.");return;}
+  // Gem PDF-data med rækker
+  const rows=getRows();
+  rows.forEach(r=>{
+    const pdf=pdfStore[r.rid]||{};
+    r.ordre=pdf.ordre||null;
+    r.ddt=pdf.ddt||null;
+  });
+  const all=getSaved();
+  const ex=all.find(e=>e.bil&&e.bil.ref===b.ref);
+  if(ex){if(!confirm(`Overskriv gemt fordeling Ref ${b.ref}?`))return;localStorage.removeItem(ex._k);}
+  const key="fl_"+b.ref+"_"+Date.now();
+  const label=b.ref+(b.dato?"  /  "+b.dato:"");
+  try{
+    localStorage.setItem(key,JSON.stringify({label,bil:b,rows,savedAt:new Date().toISOString(),_k:key}));
+    renderSaved();renderRapport();populateDataLists();showToast("Gemt: "+b.ref);
+  }catch(e){
+    showToast("Fejl: PDF-filer er for store til at gemme. Prøv uden PDFs.");
+  }
+}
+
+function indlaes(k){
+  const raw=localStorage.getItem(k);if(!raw)return;
+  const d=JSON.parse(raw);
+  if(!confirm(`Indlæs "${d.label}"? Erstatter nuværende data.`))return;
+  setBil(d.bil||{});
+  document.getElementById("vbody").innerHTML="";
+  (d.rows||[]).forEach(r=>addRow(r));
+  document.getElementById("out").value="";
+  document.getElementById("emne").style.display="none";
+  updateCap();populateDataLists();showToast("Indlæst: "+(d.bil?.ref||""));
+}
+
+function slet(k,e){
+  e.stopPropagation();
+  const raw=localStorage.getItem(k);
+  const d=raw?JSON.parse(raw):null;
+  if(!confirm(`Slet "${d?.label||k}"?`))return;
+  localStorage.removeItem(k);renderSaved();renderRapport();showToast("Slettet");
+}
+
+function renderSaved(){
+  const el=document.getElementById("chips");
+  const all=getSaved();
+  if(!all.length){el.innerHTML='<span class="chips-empty">Ingen gemte fordelinger endnu</span>';return;}
+  el.innerHTML=all.map(d=>
+    `<div class="chip" onclick="indlaes('${d._k}')">
+      <span>${d.label}</span>
+      <button class="chip-x" onclick="slet('${d._k}',event)">×</button>
+    </div>`).join("");
+}
+
+function clearAll(){
+  if(!confirm("Ryd alt?"))return;
+  ["b-ref","b-np","b-vognmand","b-grader","b-dato","b-fra-til","b-fragt"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  document.getElementById("vbody").innerHTML="";
+  document.getElementById("out").value="";
+  document.getElementById("emne").style.display="none";
+  updateCap();
+}
+
+// ── Rapport ────────────────────────────────────────────────────────────────
+function renderRapport(){
+  const all=getSaved();
+  const statsEl=document.getElementById("rpt-stats");
+  const bodyEl=document.getElementById("rpt-body");
+
+  if(!all.length){
+    statsEl.innerHTML="";
+    bodyEl.innerHTML='<div class="rpt-empty">Ingen gemte fordelinger endnu</div>';
+    return;
+  }
+
+  // Stats
+  let totalPal=0,totalTurs=all.length,totalOms=0;
+  all.forEach(d=>{
+    (d.rows||[]).forEach(r=>{totalPal+=r.pal||0;totalOms+=r.tot||0;});
+  });
+  statsEl.innerHTML=`
+    <div class="stat-box"><strong>${totalTurs}</strong>Gemte ture</div>
+    <div class="stat-box"><strong>${totalPal}</strong>Paller i alt</div>
+    <div class="stat-box"><strong>${totalOms>0?totalOms.toFixed(0)+" DKK":"–"}</strong>Samlet omsætning</div>`;
+
+  // Tabel
+  bodyEl.innerHTML=`<table class="rpt-table">
+    <thead><tr>
+      <th>Ref</th><th>Dato</th>
+      <th>Nummerplade</th><th>Grader</th>
+      <th>Stops</th><th>Paller</th><th>Kasser</th>
+      <th>Omsætning</th><th>Fragt DKK</th><th>PDF-dok.</th><th></th>
+    </tr></thead>
+    <tbody>
+    ${all.map(d=>{
+      const rows=d.rows||[];
+      const pal=rows.reduce((s,r)=>s+(r.pal||0),0);
+      const kas=rows.reduce((s,r)=>s+(r.kas||0),0);
+      const oms=rows.reduce((s,r)=>s+(r.tot||0),0);
+      const stops=[...new Set(rows.map(r=>r.kunde).filter(Boolean))].length;
+      const pdfs=rows.reduce((s,r)=>s+(r.ordre?1:0)+(r.ddt?1:0),0);
+      return`<tr>
+        <td><strong>${d.bil?.ref||"–"}</strong></td>
+        <td>${d.bil?.dato||"–"}</td>
+        <td>${d.bil?.np||"–"}</td>
+        <td>${d.bil?.grader||"–"}</td>
+        <td>${stops}</td>
+        <td>${pal}</td>
+        <td>${kas}</td>
+        <td>${oms>0?oms.toFixed(0)+" DKK":"–"}</td>
+        <td>${d.bil?.fragt||"–"}</td>
+        <td>${pdfs>0?pdfs+" fil(er)":"–"}</td>
+        <td style="white-space:nowrap">
+          <button class="rpt-open-btn" onclick="indlaes('${d._k}');showTab('main',null)">Åbn</button>
+          &nbsp;
+          <button class="rpt-del-btn" onclick="sletFraRapport('${d._k}')">Slet</button>
+        </td>
+      </tr>`;
+    }).join("")}
+    </tbody></table>`;
+}
+
+function sletFraRapport(k){
+  const raw=localStorage.getItem(k);
+  const d=raw?JSON.parse(raw):null;
+  if(!confirm(`Slet "${d?.label||k}"?`))return;
+  localStorage.removeItem(k);renderSaved();renderRapport();showToast("Slettet");
+}
+
+function exportCSV(){
+  const all=getSaved();
+  if(!all.length){alert("Ingen gemte fordelinger at eksportere.");return;}
+  const lines=["Ref,Dato,Nummerplade,Grader,Stops,Paller,Kasser,Omsætning DKK,Fragt DKK,PDF-dokumenter,Gemt tidspunkt"];
+  all.forEach(d=>{
+    const rows=d.rows||[];
+    const pal=rows.reduce((s,r)=>s+(r.pal||0),0);
+    const kas=rows.reduce((s,r)=>s+(r.kas||0),0);
+    const oms=rows.reduce((s,r)=>s+(r.tot||0),0);
+    const stops=[...new Set(rows.map(r=>r.kunde).filter(Boolean))].length;
+    const pdfs=rows.reduce((s,r)=>s+(r.ordre?1:0)+(r.ddt?1:0),0);
+    const savedAt=d.savedAt?d.savedAt.slice(0,10):"";
+    lines.push([d.bil?.ref,d.bil?.dato,d.bil?.np,d.bil?.grader,stops,pal,kas,
+      oms>0?oms.toFixed(0):"",d.bil?.fragt||"",pdfs,savedAt].join(","));
+  });
+  const blob=new Blob([lines.join("\n")],{type:"text/csv;charset=utf-8;"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="fordelingslister.csv";
+  a.click();
+}
+
+// ── AI mønstergenkendelse ──────────────────────────────────────────────────
+let aiMode="kas"; // "kas" = beregn kasser ud fra paller, "pal" = omvendt
+let aiTargetRid=null;
+let aiSuggestion=null;
+
+function openAI(mode){
+  aiMode=mode;
+  aiSuggestion=null;
+  document.getElementById("ai-apply-btn").style.display="none";
+  document.getElementById("ai-result").style.display="none";
+  document.getElementById("ai-desc").textContent=
+    mode==="kas"
+      ? "Angiv en varelinje med paller udfyldt — AI foreslår kasseantal baseret på historiske mønstre."
+      : "Angiv en varelinje med kasser udfyldt — AI foreslår palleantal baseret på historiske mønstre.";
+
+  // Byg dropdown over rækker med data
+  const rows=getRows();
+  const sel=document.getElementById("ai-row-sel");
+  sel.innerHTML='<option value="">– vælg varelinje –</option>';
+  rows.forEach((r,i)=>{
+    if(!r.vare&&!r.kunde) return;
+    const label=`${r.kunde?r.kunde+": ":""}${r.vare||"(ingen vare)"}${r.pal?" | "+r.pal+" pl.":""}${r.kas?" | "+r.kas+" ks":""}`;
+    const opt=document.createElement("option");
+    opt.value=r.rid;
+    opt.textContent=label;
+    sel.appendChild(opt);
+  });
+  sel.onchange=()=>runAI(sel.value);
+  document.getElementById("ai-overlay").classList.add("on");
+}
+
+function closeAI(){
+  document.getElementById("ai-overlay").classList.remove("on");
+  aiTargetRid=null;aiSuggestion=null;
+}
+
+async function runAI(rid){
+  if(!rid)return;
+  aiTargetRid=rid;
+  const rows=getRows();
+  const row=rows.find(r=>r.rid===rid);
+  if(!row)return;
+
+  // Byg rig historik fra alle gemte fordelinger
+  const all=getSaved();
+  const historik=[];
+  all.forEach(d=>{
+    (d.rows||[]).forEach(r=>{
+      if(r.vare){
+        historik.push({
+          kunde:r.kunde||"",vare:r.vare||"",pal:r.pal||0,kas:r.kas||0,
+          pak:r.pak||"",kt:r.kt||"",
+          grader:d.bil&&d.bil.grader?d.bil.grader:"",
+          fraTil:d.bil&&d.bil.fraTil?d.bil.fraTil:""
+        });
+      }
+    });
+  });
+
+  const resEl=document.getElementById("ai-result");
+  resEl.style.display="block";
+  resEl.innerHTML="<em>Spørger AI...</em>";
+  document.getElementById("ai-apply-btn").style.display="none";
+
+  const currentGrader=document.getElementById("b-grader").value.trim();
+  const allCurrentVarer=getRows().filter(r=>r.vare).map(r=>r.vare).join(", ");
+  const prompt=`Du er ekspert i frugt- og grøntimport. Brug historiske data til at besvare spørgsmålet.
+
+HISTORISKE VAREDATA:
+${historik.length>0?historik.map(h=>"- "+(h.kunde||"?")+": "+h.vare+" "+h.pak+" | "+h.pal+"pl "+h.kas+"ks"+(h.pal>0?" ("+(h.kas/h.pal).toFixed(1)+"ks/pl)":"")+"|"+(h.kt||"?")+"|"+(h.grader||"?")+"C").join("\n"):"Ingen historik endnu."}
+
+AKTUEL BIL: Varer: ${allCurrentVarer} | Nuværende grader: ${currentGrader||"ikke sat"}
+
+AKTUEL VARELINJE:
+- Kunde: ${row.kunde||"ukendt"}
+- Vare: ${row.vare||"ukendt"}  
+- Pakning: ${row.pak||"ukendt"}
+- Kassetype: ${row.kt||"?"}
+${aiMode==="kas"?"- Antal paller: "+row.pal:"- Antal kasser: "+row.kas}
+
+Spørgsmål 1: Hvad er sandsynligste ${aiMode==="kas"?"antal kasser":"antal paller"}?
+Spørgsmål 2: Hvilke grader skal denne vare transporteres på? Husk: laveste temperatur på bilen dikterer (ærter/asparges ~3C, vandmelon ~8C, tomater ~10C).
+
+Svar KUN med JSON:
+{"forslag":42,"begrundelse":"kort","konfidens":"høj/middel/lav","grader_forslag":"+4","grader_begrundelse":"kort"}`;
+
+  try{
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",
+        max_tokens:200,
+        messages:[{role:"user",content:prompt}]
+      })
+    });
+    const data=await resp.json();
+    const txt=data.content?.map(c=>c.text||"").join("")||"";
+    const match=txt.match(/\{[\s\S]*\}/);
+    if(match){
+      const obj=JSON.parse(match[0]);
+      aiSuggestion={rid,field:aiMode,value:obj.forslag,grader:obj.grader_forslag};
+      let html=`<strong>${aiMode==="kas"?"Foreslået kasseantal":"Foreslået palleantal"}: ${obj.forslag}</strong>${obj.begrundelse}<br><small>Konfidens: ${obj.konfidens}</small>`;
+      if(obj.grader_forslag){
+        html+=`<br><br><strong>Grader-forslag: ${obj.grader_forslag}</strong><br><small>${obj.grader_begrundelse||""}</small>`;
+      }
+      resEl.innerHTML=html;
+      document.getElementById("ai-apply-btn").style.display="inline-block";
+    }else{
+      resEl.innerHTML="Kunne ikke parse AI-svar. Prøv igen.";
+    }
+  }catch(e){
+    resEl.innerHTML="Fejl ved AI-kald: "+e.message;
+  }
+}
+
+function applyAI(){
+  if(!aiSuggestion)return;
+  const tr=document.querySelector(`tr[data-rid="${aiSuggestion.rid}"]`);
+  if(!tr)return;
+  const ins=tr.querySelectorAll("input,select");
+  if(aiSuggestion.field==="kas"){
+    ins[4].value=aiSuggestion.value;
+  }else{
+    ins[3].value=aiSuggestion.value;
+  }
+  // Apply grader suggestion if bil-grader is empty
+  if(aiSuggestion.grader){
+    const grEl=document.getElementById("b-grader");
+    if(!grEl.value||grEl.dataset.autosuggested){
+      grEl.value=aiSuggestion.grader;
+      grEl.dataset.autosuggested="1";
+      grEl.style.background="#edf5e8";
+      grEl.title="AI-forslag. Klik for at rette.";
+    }
+  }
+  recalc(ins[5]);
+  updateCap();
+  closeAI();
+  showToast("AI-forslag anvendt: "+aiSuggestion.value);
+}
+
+// ── Output ─────────────────────────────────────────────────────────────────
+function parseDato(s){
+  if(!s)return null;
+  const p=s.split("/");
+  return p.length===3?new Date(+p[2],+p[1]-1,+p[0]):new Date(s);
+}
+function padR(s,len){s=String(s);while(s.length<len)s+=" ";return s;}
+
+function computeStopDato(baseDato, offsetDays){
+  // baseDato = "DD/MM/YYYY", offsetDays = -1 for Dagrofa
+  if(!baseDato) return baseDato;
+  const p=baseDato.split("/");
+  if(p.length!==3) return baseDato;
+  const d=new Date(+p[2],+p[1]-1,+p[0]);
+  d.setDate(d.getDate()+offsetDays);
+  return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+d.getFullYear();
+}
+
+function buildStops(){
+  const baseDato=document.getElementById("b-dato").value.trim();
+  const rows=getRows().filter(r=>r.kunde&&r.vare);
+  const sm={},so=[];
+  // Track which sort values are already taken (for same-hour tiebreaker)
+  const usedSort={};
+  rows.forEach(r=>{
+    const k=ki(r.kunde);
+    const stopDato=k.offset!==0?computeStopDato(baseDato,k.offset||0):(r.dato||baseDato);
+    const key=r.kunde+"|"+stopDato;
+    if(!sm[key]){
+      // Tiebreaker: if same sort value already used, bump by 1 hour
+      let sortVal=k.s;
+      const sortKey=String(sortVal);
+      if(usedSort[sortKey]!==undefined){
+        sortVal=sortVal+1; // push 1 hour later
+      }
+      usedSort[String(k.s)]=(usedSort[String(k.s)]||0)+1;
+      // Derive display time from sortVal
+      const dispHour=sortVal>=24?sortVal-24:sortVal;
+      const dispTime=String(Math.floor(dispHour)).padStart(2,"0")+":"+
+                     String(Math.round((dispHour%1)*60)).padStart(2,"0");
+      sm[key]={kunde:r.kunde,by:k.by,dato:stopDato,sort:sortVal,tid:dispTime,coop:k.coop,mat:k.mat,lines:[]};
+      so.push(key);
+    }
+    sm[key].lines.push(r);
+  });
+  const stops=so.map(k=>sm[k]);
+  stops.sort((a,b)=>{
+    const ea=a.sort>=22?a.sort-24:a.sort;
+    const eb=b.sort>=22?b.sort-24:b.sort;
+    return ea-eb;
+  });
+  return stops;
+}
+
+function buildOutput(medPriser){
+  const ref  =document.getElementById("b-ref").value.trim();
+  const fragt=document.getElementById("b-fragt").value.trim();
+  if(!ref){alert("Udfyld Ref.");return null;}
+  const stops=buildStops();
+  if(!stops.length){alert("Ingen varelinjer.");return null;}
+
+  const anyPO=stops.some(function(s){return s.lines.some(function(r){return r.po;});});
+  var maxL=0;
+  stops.forEach(function(stop){
+    stop.lines.forEach(function(r){
+      var pl=r.pl==="Ja"?" PL":"";
+      var kiR2=ki(r.kunde);
+      var mnT=kiR2.mat&&r.mn?" //"+r.mn:"";
+      var lev=medPriser&&r.lev?"["+r.lev+"] ":"";
+      var delEst=r.del==="Ja"?" Delordre":"";
+      var v=lev+r.kas+"ks, "+r.pal+" pl. "+r.vare+" "+r.pak+" "+r.kt+pl+mnT+delEst;
+      if(v.length>maxL) maxL=v.length;
+      var sv=lev+r.kas+" "+r.kt;
+      if(sv.length>maxL) maxL=sv.length;
+    });
+  });
+  var COL=Math.max(maxL+5,68);
+
+  var DAGE2=["Søndag","Mandag","Tirsdag","Onsdag","Torsdag","Fredag","Lørdag"];
+  var html="";
+  var NL="\n";
+
+  html+="<span>Hej</span>"+NL;
+  html+="<b>Ref: "+ref+"</b>"+NL+NL;
+
+  stops.forEach(function(stop,si){
+    var d=parseDato(stop.dato);
+    var dag=d?DAGE2[d.getDay()]:"";
+    var df=d?(String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+d.getFullYear()):stop.dato;
+    var kl=(stop.tid||"").replace(":",".") ;
+
+    var hdrTxt=(si+1)+") "+stop.kunde;
+    if(stop.by&&!stop.kunde.toLowerCase().includes(stop.by.toLowerCase())) hdrTxt+=" / "+stop.by;
+    hdrTxt+=" / "+(dag?dag+" d. ":"")+df+" kl. "+kl;
+
+    if(!stop.coop){
+      html+="<b>"+hdrTxt+" <mark style='background:#FFE500;padding:0 2px'>**NB: Husk nyt CMR**</mark></b>"+NL;
+    } else {
+      html+="<b>"+hdrTxt+"</b>"+NL;
+      html+="<b><mark style='background:#FFE500;padding:0 2px'>**NB: Husk nyt CMR + følgesedler sendes + 2xfysisk (1 kopi til vognmand, underskrevet af slutkunde + 1 kopi til slutkunde, underskrevet af vognmand)**</mark></b>"+NL;
+    }
+
+    // Group lines by PO — write EPS sum immediately after last line in each PO group
+    // First pass: figure out last occurrence index for each PO
+    var poLastIdx={};
+    stop.lines.forEach(function(r,idx){
+      if(r.kt==="EPS"&&r.kas>0){
+        var pk=(r.po||"__nopo__");
+        poLastIdx[pk]=idx;
+      }
+    });
+
+    // Track accumulated EPS per PO
+    var epsAccum={};
+    var poSeen={};
+
+    stop.lines.forEach(function(r,idx){
+      var pl=r.pl==="Ja"?" PL":"";
+      var kiR=ki(r.kunde);
+      var mnTekst=kiR.mat&&r.mn?" //"+r.mn:"";
+      var lev=medPriser&&r.lev?"["+r.lev+"] ":"";
+      var delNote=r.del==="Ja"?" Delordre":"";
+      var prisStr=medPriser&&r.kp>0?"  "+r.kp.toFixed(2)+"/ks"+(r.tot>0?"  =  "+r.tot.toFixed(2)+" DKK":""):"";
+      var po=r.po||"";
+      var venstre=lev+r.kas+"ks, "+r.pal+" pl. "+r.vare+" "+r.pak+" "+r.kt+pl+mnTekst+delNote;
+
+      // Write varelinje
+      if(anyPO){
+        html+="<span>"+venstre+(po?" PO:"+po:"")+(medPriser&&r.kp>0?"  "+prisStr:"")+"</span>"+NL;
+      } else {
+        html+="<span>"+venstre+prisStr+"</span>"+NL;
+      }
+
+      // Accumulate EPS
+      if(r.kt==="EPS"&&r.kas>0){
+        var pk=po||"__nopo__";
+        epsAccum[pk]=(epsAccum[pk]||0)+r.kas;
+
+        // Write EPS sum if this is the last line for this PO
+        if(poLastIdx[pk]===idx){
+          var sumV=epsAccum[pk]+" EPS";
+          if(anyPO){
+            html+="<span>"+sumV+(po?" PO:"+po:"")+"</span>"+NL;
+          } else {
+            html+="<span>"+sumV+"</span>"+NL;
+          }
+        }
+      }
+    });
+
+    html+=NL;
+  });
+
+  var fraTil=document.getElementById("b-fra-til").value.trim();
+  if(fragt||fraTil){
+    var fragtLine="Samlet fragt: DKK "+(fragt||"–");
+    if(fraTil) fragtLine+=" ("+fraTil+")";
+    html+="<span>"+fragtLine+" <mark style='background:#FFE500;padding:0 2px'>**NB: Husk nyt CMR**</mark></span>"+NL;
+  } else {
+    html+="<span><mark style='background:#FFE500;padding:0 2px'>**NB: Husk nyt CMR**</mark></span>"+NL;
+  }
+
+  return html;
+}
+
+function generer(){
+  const html=buildOutput(false);
+  if(!html)return;
+  const outEl=document.getElementById("out");
+  outEl.innerHTML=html;
+  const np=document.getElementById("b-np").value.trim();
+  const gr=document.getElementById("b-grader").value.trim();
+  const em=document.getElementById("emne");
+  if(np||gr){em.innerHTML=`<strong>Emne:</strong> ${np}${gr?" / +"+gr+" grader":""}`;em.style.display="block";}
+  else em.style.display="none";
+}
+
+function stripHtmlToText(html){
+  return html
+    .replace(/<b>([\s\S]*?)<\/b>/gi,"$1")
+    .replace(/<mark[^>]*>([\s\S]*?)<\/mark>/gi,"$1")
+    .replace(/<span[^>]*>([\s\S]*?)<\/span>/gi,"$1")
+    .replace(/<br\s*\/?>/gi,"\n")
+    .replace(/<[^>]+>/g,"")
+    .replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&nbsp;/g," ");
+}
+
+function buildPlainText(medPriser){
+  var rawHtml=buildOutput(medPriser);
+  if(!rawHtml) return null;
+  var txt=rawHtml
+    .replace(/<b[^>]*>([\s\S]*?)<\/b>/gi,"$1")
+    .replace(/<mark[^>]*>([\s\S]*?)<\/mark>/gi,"$1")
+    .replace(/<span[^>]*>([\s\S]*?)<\/span>/gi,"$1")
+    .replace(/<br\s*\/?>/gi,"\n")
+    .replace(/<[^>]+>/g,"")
+    .replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&nbsp;/g," ")
+    .replace(/\n{3,}/g,"\n\n")
+    .trim();
+  return txt;
+}
+
+function kopier(medPriser){
+  var txt=buildPlainText(medPriser);
+  if(!txt){if(!medPriser)alert("Generer listen først.");return;}
+  navigator.clipboard.writeText(txt).then(function(){
+    showToast(medPriser?"Kopieret med priser":"Kopieret — indsæt i OWA med Ctrl+V");
+  }).catch(function(){
+    // Fallback: temp textarea
+    var ta=document.createElement("textarea");
+    ta.value=txt;
+    ta.style.cssText="position:fixed;top:0;left:0;opacity:0;";
+    document.body.appendChild(ta);
+    ta.focus();ta.select();
+    try{document.execCommand("copy");showToast("Kopieret!");}
+    catch(e){alert("Kopiering fejlede — prøv igen");}
+    document.body.removeChild(ta);
+  });
+}
+
+// ── Tabs ───────────────────────────────────────────────────────────────────
+function showTab(id,btn){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  const tabEl=document.getElementById("tab-"+id);
+  if(tabEl)tabEl.classList.add("active");
+  if(btn){
+    btn.classList.add("active");
+  }else{
+    const btns=document.querySelectorAll(".tab-btn");
+    if(id==="main"&&btns[0])btns[0].classList.add("active");
+    if(id==="rapport"&&btns[1])btns[1].classList.add("active");
+    if(id==="priser"&&btns[2])btns[2].classList.add("active");
+  }
+  if(id==="rapport")renderRapport();
+  if(id==="priser")renderPriser();
+}
+
+function showToast(m){
+  const t=document.getElementById("toast");
+  t.textContent=m;t.classList.add("on");
+  setTimeout(()=>t.classList.remove("on"),2400);
+}
+
+
+
+// ── Fragtpristabeller ─────────────────────────────────────────────────────
+const PRISER_DEFAULT = {
+  "Kaj Madsen": {
+    cols: ["Jylland","Sjælland","HBG","HBG via sil.","Wusterm.","Stavenh."],
+    rows: [
+      ["IT - Bolzano",                  19900,21700,22800,24100,14200,15700],
+      ["IT - Verona",                   20600,22400,23500,24800,14900,16400],
+      ["IT - Chioggia/Ferrara",         21250,23050,24150,25450,15550,17050],
+      ["IT - Forli/Cesena",             22050,23850,24950,26250,16350,17850],
+      ["IT - Cuneo/Piemonte",           23250,25050,26150,27450,17550,19050],
+      ["IT - Pescara/Viterbo",          25000,26800,27900,29200,19300,20800],
+      ["IT - Foggia/Napoli",            27350,29150,30250,31550,21650,23150],
+      ["IT - Latina",                   25600,27400,28500,29800,19900,21400],
+      ["IT - Bari/Ginosa",              28500,30300,31400,32700,22800,24300],
+      ["IT - Castrovillari/Cosenza",    30900,32700,33800,35100,25200,26700],
+      ["IT - Lecce (kartofler)",        31400,33200,34300,35600,25700,27200],
+      ["IT-89",                         32000,33800,34900,36200,26300,27800],
+      ["Sicilien",                      34600,36400,37500,38800,28900,30400],
+      ["Grækenland",                    32900,34700,35800,37100,27200,28700],
+    ],
+    tillæg: "Sjælland + Jylland samme dag: 1.500 kr. · Sjælland + Jylland dag 2: 3.000 kr."
+  },
+  "DFDS": {
+    cols: ["Jylland","Sjælland","Sjælland+Jylland","Sjælland+Helsingborg","Helsingborg"],
+    rows: [
+      ["Bolzano",           19900,21600,22900,23500,22700],
+      ["Verona IT-37",      20400,22100,23300,24000,23200],
+      ["Ferrara/Chioggia",  21200,22900,24200,24800,24000],
+      ["Cesena/Bologna",    21700,23400,24700,25300,24500],
+      ["Piemonte IT-10",    23000,24700,26000,26600,25900],
+      ["Foggia IT-71",      27100,28800,30100,30700,30000],
+      ["Napoli IT-80",      27100,28800,30100,30700,29900],
+      ["Bari IT-70",        28200,29900,31200,31800,31000],
+      ["Castrovillari",     30300,32000,33300,33900,33100],
+      ["IT-89",             31300,33000,34300,34900,34100],
+      ["Sicilien IT-90/99", 33700,35400,36600,37300,36400],
+    ],
+    tillæg: ""
+  },
+  "Frank Sørensen": {
+    cols: ["Jylland","Sjælland"],
+    rows: [
+      ["Verona + Chioggia", 21250,23900],
+      ["Cesena",            22750,24900],
+      ["Bari",              27750,29900],
+      ["Piemonte",          21750,23900],
+    ],
+    tillæg: ""
+  }
+};
+
+function getPriserData(){
+  try{
+    const saved=localStorage.getItem("fragtpriser");
+    if(!saved) return JSON.parse(JSON.stringify(PRISER_DEFAULT));
+    const parsed=JSON.parse(saved);
+    // Validate: check that rows are arrays with numbers (not objects from old format)
+    const firstVm=Object.values(parsed)[0];
+    if(!firstVm||!firstVm.rows||!Array.isArray(firstVm.rows[0])){
+      // Corrupt/old format — reset to default
+      localStorage.removeItem("fragtpriser");
+      return JSON.parse(JSON.stringify(PRISER_DEFAULT));
+    }
+    return parsed;
+  }catch(e){
+    localStorage.removeItem("fragtpriser");
+    return JSON.parse(JSON.stringify(PRISER_DEFAULT));
+  }
+}
+function savePriserData(data){
+  localStorage.setItem("fragtpriser",JSON.stringify(data));
+}
+
+function renderPriser(){
+  const data=getPriserData();
+  const wrap=document.getElementById("priser-wrap");
+  if(!wrap)return;
+  wrap.innerHTML="";
+  Object.entries(data).forEach(([vognmand,tbl])=>{
+    const div=document.createElement("div");
+    div.className="pt-wrap";
+    const colHdrs=tbl.cols.map(c=>`<th>${c}</th>`).join("");
+    const rowHtml=tbl.rows.map((row,ri)=>{
+      const cells=tbl.cols.map((c,ci)=>`<td><input type="number" value="${row[ci+1]||""}" onchange="updatePris('${vognmand}',${ri},${ci},this.value)" step="50"></td>`).join("");
+      return`<tr><td>${row[0]}</td>${cells}</tr>`;
+    }).join("");
+    div.innerHTML=`
+      <div class="pt-hdr"><span>${vognmand}</span><span style="font-size:11px;opacity:.7">Redigér priser direkte</span></div>
+      <table class="pt-table">
+        <thead><tr><th>Fra (Italien →)</th>${colHdrs}</tr></thead>
+        <tbody>${rowHtml}</tbody>
+      </table>
+      ${tbl.tillæg?`<div class="pt-tillæg">Tillæg: ${tbl.tillæg}</div>`:""}`;
+    wrap.appendChild(div);
+  });
+}
+
+function updatePris(vognmand,ri,ci,val){
+  const data=getPriserData();
+  if(data[vognmand]&&data[vognmand].rows[ri]){
+    data[vognmand].rows[ri][ci+1]=parseInt(val)||0;
+    savePriserData(data);
+  }
+}
+
+// Lookup freight price given vognmand, fra-region and destination
+function lookupFragt(vognmandHint, fraStr, tilStr){
+  const data=getPriserData();
+  if(!fraStr||!tilStr) return null;
+
+  const fra=fraStr.toLowerCase().trim();
+  const til=tilStr.toLowerCase().trim();
+
+  // Normalize common Danish/Italian city aliases
+  const FRA_ALIASES={
+    "bari":"bari","ginosa":"bari","bari/ginosa":"bari",
+    "verona":"verona","bolzano":"bolzano","bozen":"bolzano",
+    "chioggia":"chioggia","ferrara":"ferrara","chioggia/ferrara":"chioggia",
+    "cesena":"cesena","bologna":"cesena","forli":"forli","cesena/bologna":"cesena",
+    "piemonte":"piemonte","cuneo":"cuneo","piemonte it-10":"piemonte",
+    "foggia":"foggia","napoli":"foggia","napoli it-80":"napoli",
+    "sicilien":"sicilien","sicily":"sicilien","it-90":"sicilien",
+    "castrovillari":"castrovillari","cosenza":"castrovillari",
+    "lecce":"lecce","latina":"latina","pescara":"pescara","viterbo":"pescara",
+    "graekenland":"greece","grækenland":"greece","greece":"greece",
+  };
+  const TIL_ALIASES={
+    "jylland":"jylland","jutland":"jylland","dk-jylland":"jylland",
+    "sjaelland":"sjælland","sjælland":"sjælland","zealand":"sjælland","sj":"sjælland",
+    "helsingborg":"helsingborg","hbg":"helsingborg","hbg via sil":"hbg via sil",
+    "stavenhagen":"stavenh.","wustermann":"wusterm.",
+    "sjaelland+jylland":"sjælland + jylland","sjælland+jylland":"sjælland + jylland",
+  };
+
+  // Resolve aliases
+  const fraResolved=FRA_ALIASES[fra]||fra;
+  const tilResolved=TIL_ALIASES[til]||til;
+
+  // Determine vognmand search order
+  const hint=(vognmandHint||"").toLowerCase();
+  let vmKeys=Object.keys(data);
+  if(hint){
+    const exact=vmKeys.find(v=>v.toLowerCase()===hint);
+    const partial=vmKeys.find(v=>v.toLowerCase().includes(hint)||hint.includes(v.toLowerCase().split(" ")[0]));
+    if(exact) vmKeys=[exact,...vmKeys.filter(v=>v!==exact)];
+    else if(partial) vmKeys=[partial,...vmKeys.filter(v=>v!==partial)];
+  }
+
+  for(const vm of vmKeys){
+    const tbl=data[vm];
+    if(!tbl) continue;
+
+    // Find fra-row with alias + token matching
+    // Generous tokenization: split on any non-letter, keep tokens ≥2 chars
+    const allFraTok=new Set([fraResolved,...fra.split(/[^a-zæøå]+/)].filter(t=>t.length>=2));
+    const row=tbl.rows.find(r=>{
+      const rLow=r[0].toLowerCase();
+      // Match if ANY fra-token appears in row name
+      return [...allFraTok].some(t=>rLow.includes(t));
+    });
+    if(!row) continue;
+
+    const allTilTok=new Set([tilResolved,...til.split(/[^a-zæøå]+/)].filter(t=>t.length>=2));
+    let colIdx=tbl.cols.findIndex(c=>{
+      const cLow=c.toLowerCase();
+      return [...allTilTok].some(t=>cLow.includes(t));
+    });
+    if(colIdx<0) continue;
+
+    return{pris:row[colIdx+1],vognmand:vm,fra:row[0],til:tbl.cols[colIdx]};
+  }
+  return null;
+}
+
+// Auto-fill fragt when Fra/Til changes
+function autoCalcFragt(){
+  const fraTil=document.getElementById("b-fra-til").value.trim();
+  const vognmand=document.getElementById("b-vognmand")?.value||"";
+  const fragtEl=document.getElementById("b-fragt");
+  if(!fraTil){
+    // Clear auto-suggestion if fra-til cleared
+    if(fragtEl.dataset.auto==="1"){fragtEl.value="";fragtEl.style.background="";fragtEl.dataset.auto="";}
+    return;
+  }
+  // Split on any separator: -->, ->, /, til, →
+  const parts=fraTil.split(/\s*(?:-->|->|→|\/)\s*/);
+  if(parts.length<2) return;
+  const fra=parts[0].trim();
+  const til=parts[parts.length-1].trim(); // always use last part as destination
+  const result=lookupFragt(vognmand,fra,til);
+  if(result){
+    fragtEl.value=result.pris;
+    fragtEl.style.background="#edf5e8";
+    fragtEl.title="Auto-beregnet: "+result.fra+" → "+result.til+" ("+result.vognmand+")";
+    fragtEl.dataset.auto="1";
+    showToast("Fragtpris: "+result.pris.toLocaleString("da-DK")+" DKK ("+result.vognmand+")");
+  }else if(vognmand||fraTil){
+    fragtEl.style.background=fragtEl.value?"":"#fff8e8";
+    fragtEl.title="Ingen pris fundet — indtast manuelt";
+    if(!fragtEl.value){
+      fragtEl.placeholder="Ingen match — indtast manuelt";
+      if(fraTil&&fraTil.includes("/")&&!vognmand){
+        showToast("Vælg vognmand for at auto-beregne fragt");
+      } else if(fraTil){
+        showToast("Ingen prismatch for: "+fraTil+(vognmand?" ("+vognmand+")":""));
+      }
+    }
+  }
+}
+
+
+// ── Forbedret autocomplete med tab-forslag ────────────────────────────────
+let acState={el:null,suggestion:""};
+
+function buildSuggestionDB(){
+  const all=getSaved();
+  const db={vare:{},pak:{},kunde:{},mn:{}};
+  all.forEach(d=>{
+    (d.rows||[]).forEach(r=>{
+      if(r.vare){
+        const k=r.vare.toLowerCase();
+        db.vare[k]={display:r.vare,count:(db.vare[k]?.count||0)+1,sub:r.pak||""};
+      }
+      if(r.pak){
+        const k=(r.vare||"").toLowerCase()+"|"+r.pak.toLowerCase();
+        db.pak[k]={display:r.pak,vare:r.vare||"",count:(db.pak[k]?.count||0)+1};
+      }
+      if(r.mn&&r.kunde){
+        const k=r.kunde+"|"+(r.vare||"").toLowerCase();
+        db.mn[k]={display:r.mn,count:(db.mn[k]?.count||0)+1};
+      }
+    });
+  });
+  return db;
+}
+
+function getSuggestion(field, currentVal, rowContext){
+  if(!currentVal||currentVal.length<2) return "";
+  const db=buildSuggestionDB();
+  const low=currentVal.toLowerCase();
+  if(field==="vare"){
+    const match=Object.values(db.vare)
+      .filter(v=>v.display.toLowerCase().startsWith(low)&&v.display.toLowerCase()!==low)
+      .sort((a,b)=>b.count-a.count)[0];
+    return match?match.display:"";
+  }
+  if(field==="pak"&&rowContext.vare){
+    const key=rowContext.vare.toLowerCase()+"|";
+    const match=Object.entries(db.pak)
+      .filter(([k,v])=>k.startsWith(key)&&v.display.toLowerCase().startsWith(low))
+      .map(([k,v])=>v)
+      .sort((a,b)=>b.count-a.count)[0];
+    return match?match.display:"";
+  }
+  return "";
+}
+
+function attachAutocomplete(input, field){
+  input.addEventListener("input", function(){
+    const tr=this.closest("tr");
+    if(!tr)return;
+    const ins=tr.querySelectorAll("input,select");
+    const ctx={vare:ins[2]?.value||""};
+    const sug=getSuggestion(field,this.value,ctx);
+    showInlineSuggestion(this,sug);
+  });
+  input.addEventListener("keydown", function(e){
+    if((e.key==="Tab"||e.key==="ArrowRight")&&acState.suggestion&&acState.el===this){
+      e.preventDefault();
+      this.value=acState.suggestion;
+      clearSuggestion();
+      // Move to next input
+      if(e.key==="Tab"){
+        const allInputs=[...document.querySelectorAll("#vbody input:not([type=number][style*=display]),#vbody select")];
+        const idx=allInputs.indexOf(this);
+        if(idx>=0&&idx<allInputs.length-1) allInputs[idx+1].focus();
+      }
+      this.dispatchEvent(new Event("input"));
+    }
+    if(e.key==="Escape") clearSuggestion();
+  });
+  input.addEventListener("blur",function(){setTimeout(clearSuggestion,150);});
+}
+
+function showInlineSuggestion(el,suggestion){
+  clearSuggestion();
+  if(!suggestion||!el.value) return;
+  if(!suggestion.toLowerCase().startsWith(el.value.toLowerCase())) return;
+  acState={el,suggestion};
+  // Show ghost text hint below field
+  const rect=el.getBoundingClientRect();
+  const hint=document.createElement("div");
+  hint.className="suggest-hint";
+  hint.id="ac-hint";
+  hint.style.cssText=`top:${rect.bottom+window.scrollY+2}px;left:${rect.left+window.scrollX}px;`;
+  hint.innerHTML=`<span style="opacity:0">${el.value}</span><span style="color:#bbb">${suggestion.slice(el.value.length)}</span> <span style="font-size:10px;background:#f0f0f0;padding:1px 4px;border-radius:2px;color:#999">Tab</span>`;
+  hint.style.position="absolute";
+  document.body.appendChild(hint);
+}
+
+function clearSuggestion(){
+  acState={el:null,suggestion:""};
+  const h=document.getElementById("ac-hint");
+  if(h)h.remove();
+}
+
+// Patch addRow to attach autocomplete after row creation
+const _origAddRow=addRow;
+
+
+// ── Indkøbsordre import (PDF → feltdata via AI) ───────────────────────────
+
+// Kunde-genkendelse baseret på leveringsadresse i PDF
+const KUNDE_MAP = [
+  {keys:["netto","køge","koege","4600"],       kunde:"Netto Køge"},
+  {keys:["netto","aarslev","5560","årslev"],   kunde:"Netto Aarslev"},
+  {keys:["dagab","axfood","landskrona","sweden","sverige","helsingborg"],kunde:"AxFood (Dagab)"},
+  {keys:["salling","ishøj","ishoej","2635"],   kunde:"Salling Ishøj"},
+  {keys:["salling","højbjerg","hoejbjerg","8270"], kunde:"Salling Højbjerg"},
+  {keys:["coop","hasselager","8260"],          kunde:"Coop Hasselager"},
+  {keys:["coop","brøndby","broendby","2605"],  kunde:"Coop Brøndby"},
+  {keys:["rema","1000","8200"],                kunde:"Rema 1000"},
+  {keys:["dagrofa","vejle","7100"],            kunde:"Dagrofa Vejle"},
+];
+
+function detectKunde(text) {
+  const low = text.toLowerCase();
+  for(const k of KUNDE_MAP){
+    if(k.keys.filter(kw=>low.includes(kw)).length >= 2) return k.kunde;
+  }
+  return "";
+}
+
+let poData = null;
+let poPDFBase64 = null;
+
+function openPOImport(){
+  document.getElementById("po-overlay").classList.add("on");
+  document.getElementById("po-status").style.display="none";
+  document.getElementById("po-preview").style.display="none";
+  document.getElementById("po-bil-info").style.display="none";
+  document.getElementById("po-apply-btn").style.display="none";
+  document.getElementById("po-file-name").style.display="none";
+  document.getElementById("po-drop").className="po-drop";
+  poData=null; poPDFBase64=null;
+}
+
+function closePOImport(){
+  document.getElementById("po-overlay").classList.remove("on");
+}
+
+// Drag & drop
+(function(){
+  const drop=document.getElementById("po-drop");
+  if(!drop) return;
+  drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("drag");});
+  drop.addEventListener("dragleave",()=>drop.classList.remove("drag"));
+  drop.addEventListener("drop",e=>{
+    e.preventDefault();drop.classList.remove("drag");
+    const file=e.dataTransfer.files[0];
+    if(file&&file.type==="application/pdf") loadPOFile(file);
+  });
+})();
+
+function onPOFileSelect(inp){
+  if(inp.files[0]) loadPOFile(inp.files[0]);
+}
+
+function loadPOFile(file){
+  const nameEl=document.getElementById("po-file-name");
+  nameEl.textContent=file.name;
+  nameEl.style.display="block";
+  document.getElementById("po-drop").className="po-drop has-file";
+  const reader=new FileReader();
+  reader.onload=e=>{
+    poPDFBase64=e.target.result.split(",")[1];
+    document.getElementById("po-status").className="po-status ok";
+    document.getElementById("po-status").textContent="✓ PDF indlæst — klik 'Læs PDF med AI'";
+    document.getElementById("po-status").style.display="block";
+  };
+  reader.readAsDataURL(file);
+}
+
+async function runPOImport(){
+  if(!poPDFBase64){alert("Vælg en PDF-fil først.");return;}
+  const statusEl=document.getElementById("po-status");
+  statusEl.className="po-status loading";
+  statusEl.textContent="AI læser indkøbsordren...";
+  statusEl.style.display="block";
+  document.getElementById("po-parse-btn").disabled=true;
+  document.getElementById("po-preview").style.display="none";
+  document.getElementById("po-bil-info").style.display="none";
+  document.getElementById("po-apply-btn").style.display="none";
+
+  const prompt=`Du læser en indkøbsordre fra en dansk supermarkedskæde (typisk Netto eller Salling).
+
+Udtræk følgende information og returner KUN JSON:
+
+1. Ordrehoved:
+   - ordrenummer (PO-nummer, fx 4046866614)
+   - leveringsdato (fx 18.05.2026 → konverter til DD/MM/YYYY)
+   - kunde (firma/leveringsadresse — fx "NETTO DC KØGE" eller "SALLING HØJBJERG")
+   - valuta
+
+2. Varelinjer — for HVER varelinje:
+   - antal (bestilt antal, fx 448)
+   - enhed (fx Carton, Stk)
+   - varenummer (intern ordre-varenr, fx 89206000556)
+   - ean (EAN/stregkode, fx 5711044412531)
+   - varebeskrivelse (på dansk, fx "ÆRTER, BAKKE, 450 G")
+   - stk_pr_enhed (antal stk pr. kasse, fx 12 — "Carton" er palletype, IGNORER det)
+   - pris_pr_stk (pris per STYK i DKK, fx 15.50 — kassepris = stk_pr_enhed × pris_pr_stk)
+
+Svar KUN med dette JSON (ingen tekst udenfor):
+{
+  "ordrenummer":"4046866614",
+  "leveringsdato":"18/05/2026",
+  "kunde":"NETTO DC KØGE",
+  "valuta":"DKK",
+  "linjer":[
+    {"antal":448,"enhed":"Carton","varenummer":"89206000556","ean":"5711044412531","varebeskrivelse":"Ærter, Bakke, 450 g","stk_pr_enhed":12,"pris_pr_stk":15.50}
+  ]
+}`;
+
+  try{
+    // Call Claude API with PDF as document (supports image-based/scanned PDFs)
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "anthropic-beta":"pdfs-2024-09-25"
+      },
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",
+        max_tokens:2000,
+        messages:[{
+          role:"user",
+          content:[
+            {type:"document",source:{type:"base64",media_type:"application/pdf",data:poPDFBase64}},
+            {type:"text",text:prompt}
+          ]
+        }]
+      })
+    });
+    if(!resp.ok){
+      const errBody=await resp.json().catch(()=>({}));
+      throw new Error("API fejl "+resp.status+": "+(errBody.error&&errBody.error.message||resp.statusText));
+    }
+    const data=await resp.json();
+    const txt=(data.content||[]).map(c=>c.text||"").join("");
+    if(!txt) throw new Error("Tomt svar fra API — tjek at PDF ikke er krypteret");
+    const match=txt.match(/\{[\s\S]*\}/);
+    if(!match) throw new Error("Kunne ikke finde JSON i svar: "+txt.slice(0,300));
+    poData=JSON.parse(match[0]);
+    if(!poData.linjer||!poData.linjer.length) throw new Error("Ingen varelinjer fundet");
+
+    // Detect kunde from address text
+    const detectedKunde=detectKunde(poData.kunde||"");
+
+    // Show bil-info
+    document.getElementById("po-kunde").textContent=(detectedKunde||poData.kunde||"–");
+    document.getElementById("po-ordrenr").textContent=poData.ordrenummer||"–";
+    document.getElementById("po-levdato").textContent=poData.leveringsdato||"–";
+    document.getElementById("po-valuta").textContent=poData.valuta||"DKK";
+    document.getElementById("po-bil-info").style.display="grid";
+    poData._detectedKunde=detectedKunde;
+
+    // Show preview
+    const rowsEl=document.getElementById("po-rows");
+    rowsEl.innerHTML=poData.linjer.map((l,i)=>`
+      <div class="po-row">
+        <span class="pr-kas">${l.antal} ks</span>
+        <span class="pr-vare">${l.varebeskrivelse||"–"}</span>
+        <span class="pr-pak">${(()=>{const s=(l.varebeskrivelse||"").match(/(\d[\d,\.]*\s*(?:KG|G|L|ML|CL))/i);return l.stk_pr_enhed&&s?l.stk_pr_enhed+"x"+s[0].replace(/\s/,"").toLowerCase():(l.stk_pr_enhed?l.stk_pr_enhed+" stk.":"–")})()}</span>
+        <span class="pr-pris">${l.pris_pr_stk&&l.stk_pr_enhed?"kp: "+(l.stk_pr_enhed*l.pris_pr_stk).toFixed(2)+" DKK":l.pris_pr_stk?l.pris_pr_stk.toFixed(2)+" kr/stk":""}</span>
+        <span class="pr-po">${l.varenummer||""}</span>
+      </div>`).join("");
+    document.getElementById("po-line-count").textContent=poData.linjer.length+" linjer";
+    document.getElementById("po-preview").style.display="block";
+    document.getElementById("po-apply-btn").style.display="inline-block";
+
+    statusEl.className="po-status ok";
+    statusEl.textContent="✓ "+poData.linjer.length+" varelinjer læst fra "+( detectedKunde||poData.kunde);
+  }catch(e){
+    statusEl.className="po-status err";
+    statusEl.textContent="Fejl: "+e.message;
+    console.error(e);
+  }
+  document.getElementById("po-parse-btn").disabled=false;
+}
+
+function applyPOImport(){
+  if(!poData||!poData.linjer) return;
+  const kunde=poData._detectedKunde||"";
+  const levdato=poData.leveringsdato||document.getElementById("b-dato").value||"";
+  const po=poData.ordrenummer||"";
+
+  // Set global dato if not already set
+  if(levdato&&!document.getElementById("b-dato").value){
+    document.getElementById("b-dato").value=levdato;
+    autoFillDato();
+  }
+
+  // Remove blank rows first
+  [...document.querySelectorAll("#vbody tr")].filter(tr=>{
+    const ins=tr.querySelectorAll("input,select");
+    return !ins[0].value&&!ins[2].value;
+  }).forEach(tr=>tr.remove());
+
+  poData.linjer.forEach(l=>{
+    // Build pakning string: "12x450g" — find weight/volume in varebeskrivelse
+    let pak="";
+    const descStr=l.varebeskrivelse||"";
+    // Match weight/volume like "450 G", "500G", "1 KG", "250ML" etc.
+    const sizeMatch=descStr.match(/(\d[\d,\.]*\s*(?:KG|G|L|ML|CL|KG\.?))/i);
+    if(l.stk_pr_enhed&&sizeMatch){
+      const size=sizeMatch[0].replace(/\s/,"").toLowerCase()
+        .replace("kg","kg").replace("ml","ml").replace("cl","cl").replace("g","g").replace("l","l");
+      pak=l.stk_pr_enhed+"x"+size;
+    } else if(l.stk_pr_enhed){
+      pak=l.stk_pr_enhed+" stk.";
+    }
+
+    // Clean varebeskrivelse
+    let vare=(l.varebeskrivelse||"")
+      .replace(/,\s*(BAKKE|POSE|BOX|KASSE)/i," ")
+      .replace(/[\*\+]/g,"")
+      .replace(/\s{2,}/g," ")
+      .trim();
+    // Title case
+    vare=vare.split(" ").map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(" ");
+
+    // Kassetype: PAP for Coop og AxFood/Dagab, EPS for alle andre
+    const kt=(kunde.startsWith("Coop")||kunde.includes("Dagab")||kunde.startsWith("AxFood"))?"PAP":"EPS";
+
+    addRow({
+      kunde,
+      dato:levdato,
+      vare,
+      pal:"",          // paller udfyldes manuelt (fremgår ikke af indkøbsordre)
+      kas:l.antal||"",
+      pak,
+      kt,
+      pl:"Nej",
+      mn:l.varenummer||"",
+      po,
+      lev:"",
+      spk:l.stk_pr_enhed||"",
+      sp:l.pris_pr_stk||"",
+      kp:l.stk_pr_enhed&&l.pris_pr_stk?+(l.stk_pr_enhed*l.pris_pr_stk).toFixed(2):"",
+    });
+  });
+
+  closePOImport();
+  updateCap();
+  showToast("✓ "+poData.linjer.length+" linjer tilføjet fra "+( poData._detectedKunde||poData.kunde)+". Udfyld antal paller.");
+}
+
+// ── Import lasteliste ─────────────────────────────────────────────────────
+let importedRows = [];
+
+function openImport(){
+  document.getElementById("imp-overlay").classList.add("on");
+  document.getElementById("imp-text").value="";
+  document.getElementById("imp-status").style.display="none";
+  document.getElementById("imp-preview").style.display="none";
+  document.getElementById("imp-apply-btn").style.display="none";
+  document.getElementById("imp-ref").value=document.getElementById("b-ref").value||"";
+  importedRows=[];
+}
+function closeImport(){
+  document.getElementById("imp-overlay").classList.remove("on");
+}
+
+async function runImport(){
+  const raw=document.getElementById("imp-text").value.trim();
+  if(!raw){alert("Indsæt lasteliste-tekst.");return;}
+  const statusEl=document.getElementById("imp-status");
+  statusEl.className="imp-status loading";
+  statusEl.textContent="AI fortolker lastelisten...";
+  statusEl.style.display="block";
+  document.getElementById("imp-parse-btn").disabled=true;
+  document.getElementById("imp-preview").style.display="none";
+  document.getElementById("imp-apply-btn").style.display="none";
+
+  const kundeNavne=KD.map(k=>k.n).join(", ");
+
+  const prompt=`Du er ekspert i frugt- og grøntimport fra Italien til Danmark.
+Fortolk nedenstående lasteliste og returner et JSON-array med én post per varelinje.
+
+REGLER:
+- Oversæt varetekst fra italiensk til dansk (Pisello→Ærter, Kiwi→Kiwi, Broccolo→Broccoli, Pomodoro/Pom.→Tomater, Arancia/Arance→Appelsiner, Limone→Citroner, Cavolfiore/Cavolf.→Blomkål, Finocchio→Fennikel, Asparago/Asparagi→Asparges, Fragola→Jordbær, Uva→Druer, Melone→Melon, Anguria→Vandmelon, Pera→Pærer, Mela/Mele→Æbler, Ciliegia→Kirsebær, Aglio→Hvidløg, Cipolla→Løg, Insalata→Salat, Pisello Fresco→Ærter, Bio/Øko→Øko prefix)
+- Kassetype: Coop-kunder ALTID "PAP", alle andre "EPS" (medmindre "cartone"/"PAP" er angivet, da bruges PAP)
+- Kunde: match mod disse kundenavne: ${kundeNavne}. Brug dit bedste skøn ved forkortelser (xRema→Rema 1000, Coop+lokation→Coop [lokation], Netto+lokation→Netto [lokation] osv.)
+- Producent: tekst i parentes er typisk producenten
+- Pakning: formater konsistent, fx "12x450g", "10x500g", "8 stk.", "x50 stk."
+- Paller: tal efterfulgt af "plt" eller "pl"
+- Ignorer linjer der ikke er varelinjer (overskrifter, tomme linjer, totaler)
+- Private label: sæt til "Ja" hvis "PL", "private label", "øko" brand eller "änglamark" nævnes
+
+Lasteliste:
+${raw}
+
+Svar KUN med et JSON-array, ingen tekst udenfor:
+[{"pal":4,"vare":"Ærter","pak":"12x500g","kt":"EPS","kunde":"Rema 1000","lev":"Redavid","pl":"Nej","warn":""},...]`;
+
+  try{
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",
+        max_tokens:2000,
+        messages:[{role:"user",content:prompt}]
+      })
+    });
+    const data=await resp.json();
+    const txt=(data.content||[]).map(c=>c.text||"").join("");
+    const match=txt.match(/\[[\s\S]*\]/);
+    if(!match) throw new Error("Kunne ikke finde JSON i svaret: "+txt.slice(0,200));
+    importedRows=JSON.parse(match[0]);
+    if(!Array.isArray(importedRows)||!importedRows.length) throw new Error("Tomt resultat");
+
+    statusEl.className="imp-status ok";
+    statusEl.textContent="✓ "+importedRows.length+" varelinjer fortolket — gennemgå nedenfor";
+
+    // Render preview
+    const previewEl=document.getElementById("imp-rows");
+    previewEl.innerHTML=importedRows.map((r,i)=>`
+      <div class="imp-row">
+        <span class="ir-pal">${r.pal||"?"} pl.</span>
+        <span class="ir-vare">${r.vare||"?"}</span>
+        <span style="color:var(--muted);font-size:11px">${r.pak||""}</span>
+        <span style="font-size:11px">${r.kt||"EPS"}</span>
+        ${r.lev?`<span style="font-size:11px;color:var(--muted)">[${r.lev}]</span>`:""}
+        <span class="ir-kunde">${r.kunde||"?"}</span>
+        ${r.pl==="Ja"?`<span class="ir-warn">PL</span>`:""}
+        ${r.warn?`<span class="ir-warn">⚠ ${r.warn}</span>`:""}
+      </div>`).join("");
+    document.getElementById("imp-preview").style.display="block";
+    document.getElementById("imp-apply-btn").style.display="inline-block";
+  }catch(e){
+    statusEl.className="imp-status err";
+    statusEl.textContent="Fejl: "+e.message;
+  }
+  document.getElementById("imp-parse-btn").disabled=false;
+}
+
+function applyImport(){
+  if(!importedRows.length) return;
+  const ref=document.getElementById("imp-ref").value.trim();
+  if(ref) document.getElementById("b-ref").value=ref;
+
+  // Ryd eksisterende tomme rækker
+  const existing=document.querySelectorAll("#vbody tr");
+  const emptyRows=[...existing].filter(tr=>{
+    const ins=tr.querySelectorAll("input,select");
+    return !ins[0].value && !ins[2].value; // ingen kunde og ingen vare
+  });
+  emptyRows.forEach(tr=>tr.remove());
+
+  // Lastelisten er i omvendt rækkefølge (sidst lastet = sidst leveret)
+  // Vi tilføjer i den rækkefølge vi får den — vores buildStops sorterer automatisk
+  const dato=document.getElementById("b-dato").value.trim();
+  importedRows.forEach(r=>{
+    addRow({
+      kunde: r.kunde||"",
+      dato:  dato,
+      vare:  r.vare||"",
+      pal:   r.pal||"",
+      kas:   "",        // kasser udfyldes manuelt
+      pak:   r.pak||"",
+      kt:    r.kt||"EPS",
+      pl:    r.pl||"Nej",
+      mn:    r.mn||"",
+      po:    r.po||"",
+      lev:   r.lev||"",
+    });
+  });
+
+  closeImport();
+  showToast("✓ "+importedRows.length+" linjer tilføjet — udfyld kasser, PO og priser");
+  updateCap();
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+// Force refresh of price data if schema version changed
+const PRISER_VERSION="v3";
+if(localStorage.getItem("fragtpriser_version")!==PRISER_VERSION){
+  localStorage.removeItem("fragtpriser");
+  localStorage.setItem("fragtpriser_version",PRISER_VERSION);
+}
+renderSaved();
+populateDataLists();
+for(let i=0;i<5;i++) addRow();
+</script>
+</body>
+</html>
